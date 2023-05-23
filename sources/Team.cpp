@@ -3,44 +3,58 @@
 
 using namespace std;
 namespace ariel {
-    Team::Team(Character *leader) : _leader(leader), _matesAmount(0) {
-        add(leader);
+    Team::Team(Character *leader) : _leader(leader) {
+        add(_leader);
     }
 
     Team::~Team() {
-        for (Character *member: _teamMates)delete (member);
+        for (Character *member: _teamMates) delete (member);
     }
+
 
     void Team::add(Character *teamMate) {
         if (_teamMates.size() >= MAX_CAPACITY) {
             throw std::runtime_error("Team is already at max capacity");
         }
+        if(teamMate->isPlaying()){
+            throw std::runtime_error("character is already playing");
+        }
 
         auto insertPosition = _teamMates.end();
-        if (dynamic_cast<Cowboy *>(teamMate)) {
-            for (auto it = _teamMates.begin(); it != _teamMates.end(); ++it) {
-                if (!dynamic_cast<Cowboy *>(*it)) {
-                    insertPosition = it;
-                    break;
-                }
+        for (auto it = _teamMates.begin(); it != _teamMates.end(); ++it) {
+            if (!dynamic_cast<Cowboy *>(*it)) {
+                insertPosition = it;
+                break;
             }
         }
-        _teamMates.insert(insertPosition, member);
+        _teamMates.insert(insertPosition, teamMate);
+        teamMate->setPlaying(true);
     }
 
     void Team::attack(ariel::Team *otherTeam) {
-        if (!_leader->isAlive()) {
-            findClosestTeamMateCharacter(_leader, _teamMates);
-        }
+        if(otherTeam == nullptr)throw invalid_argument("cannot attack null team");
 
-        Character *victim = findClosestTeamMateCharacter(_leader, otherTeam.getTeamMates());
+        if(otherTeam->stillAlive()==0) throw runtime_error("no one to attack, team is dead");
+
+        if(stillAlive() == 0) return;
+
+        if (!_leader->isAlive()) {
+            _leader = findClosestTeamMateCharacter(_leader, _teamMates);
+        }
+        Character *victim = findClosestTeamMateCharacter(_leader, otherTeam->getTeamMates());
         for (Character *member: _teamMates) {
-            Cowboy *cowboyPtr = dynamic_cast<Cowboy *>(Character);
+            if (!member->isAlive()) continue;
+            if (otherTeam->stillAlive() == 0) return;
+
+            auto *cowboyPtr = dynamic_cast<Cowboy *>(member);
             if (cowboyPtr) {
-                if (!cowboyPtr->hasboolets())cowboyPtr->reload();
+                if (!cowboyPtr->hasboolets()){
+                    cowboyPtr->reload();
+                    continue;
+                }
                 cowboyPtr->shoot(victim);
             } else {
-                Ninja *ninjaPtr = dynamic_cast<Ninja *>(Character);
+                auto *ninjaPtr = dynamic_cast<Ninja *>(member);
                 if (ninjaPtr->distance(victim) <= 1) {
                     ninjaPtr->slash(victim);
                 } else {
@@ -51,7 +65,6 @@ namespace ariel {
                 victim = findClosestTeamMateCharacter(_leader, otherTeam->getTeamMates());
                 if (!victim) return;
             }
-
         }
     }
     int Team::stillAlive() const {
@@ -71,19 +84,25 @@ namespace ariel {
     }
 
 
-    Character *Team::findClosestTeamMateCharacter(ariel::Character *current, std::vector<Character *> teamMates) {
-        int minDistance = 0;
-        Character *character;
+    Character* Team::findClosestTeamMateCharacter(ariel::Character *current, const std::vector<Character *>& teamMates) {
+        double minDistance = (double)INTMAX_MAX;
+        Character *character= nullptr;
         for (Character *member: teamMates) {
-            if (!member->isAlive()) continue;
+            if (!member->isAlive() || member==current) continue;
             double current_distance = current->distance(member);
             if (current_distance < minDistance) {
                 character = member;
-                minDistance = current_distance
+                minDistance = current_distance;
             }
         }
         return character;
     }
 
-    std::vector<Character *> Team::getTeamMates() {return _teamMates;}
+    std::vector<Character *>Team::getTeamMates() {return _teamMates;}
+
+    void Team::addToTeamMates(ariel::Character *teamMate) {
+        _teamMates.push_back(teamMate);
+    }
+
+    Character *Team::getLeader() {return _leader;}
 }

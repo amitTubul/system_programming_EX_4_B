@@ -5,23 +5,31 @@
 #include "TrainedNinja.hpp"
 #include "OldNinja.hpp"
 
-#define MAX_CAPACITY 10
-
 namespace ariel{
     class Team{
     private:
         std::vector<Character*> _teamMates;
         Character* _leader;
-        int _matesAmount;
     public:
-        Team(Character* leader);
-        ~Team();
-        void add(Character* teamMate);
-        void attack(Team* otherTeam);
+        explicit Team(Character* leader);
+        virtual ~Team();
+
+        virtual void add(Character* teamMate);
+        virtual void attack(Team* otherTeam);
         int stillAlive() const;
         void print() const;
-        Character* findClosestTeamMateCharacter(Character*current, std::vector<Character*> teamMates);
-        std::vector<Character*> getTeamMates();
+        static Character* findClosestTeamMateCharacter(Character*current, const std::vector<Character*>& teamMates);
 
+        std::vector<Character*> getTeamMates();
+        void addToTeamMates(Character* teamMate);
+        Character* getLeader();
+
+        // for tidy check
+        Team(const Team&) = delete;
+        Team& operator=(const Team&) = delete;
+        Team(Team&&) = delete;
+        Team& operator=(Team&&) = delete;
+
+        static const int MAX_CAPACITY { 10 };
     };
 }

@@ -1,11 +1,13 @@
 #pragma once
 #include "Team.hpp"
 
-#define MAX_CAPACITY 10
 
 namespace ariel{
     class SmartTeam : public Team{
     public:
-        SmartTeam(Character* leader);
+        explicit SmartTeam(Character* leader);
+        void add(ariel::Character *teamMate) override;
+        void attack(ariel::Team *otherTeam) override;
+        static Character* findClosestWeakestVictim(Character*current, const std::vector<Character*>& teamMates);
     };
 }

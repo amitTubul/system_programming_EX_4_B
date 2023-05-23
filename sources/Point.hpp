@@ -11,11 +11,11 @@ namespace ariel{
 
     public:
         Point(double xCordinate, double yCordinate);
-        double distance(Point other);
-        std::string print();
-        Point moveTowards(Point source, Point dest, double maxDistance);
-        double getX();
-        double getY();
+        double distance(const Point& other) const;
+        std::string print() const;
+        static Point moveTowards(const Point& source, const Point& dest, double maxDistance);
+        double getX() const;
+        double getY() const;
     };
 
 }
